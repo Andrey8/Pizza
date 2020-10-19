@@ -1,0 +1,7 @@
+*.log
+*.autosave
+*.user
+*.pro.user
+*.astylerc
+*.Debug
+*.Release
