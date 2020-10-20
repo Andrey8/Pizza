@@ -6,4 +6,5 @@ CONFIG -= qt
 SUBDIRS += \
     Base \
     Launcher \
-    InputHandler
+    InputHandler \
+    Algorithms
