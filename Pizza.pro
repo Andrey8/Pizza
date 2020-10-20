@@ -7,4 +7,5 @@ SUBDIRS += \
     Base \
     Launcher \
     InputHandler \
-    Algorithms
+    Algorithms \
+    Tests
