@@ -2,17 +2,14 @@
 
 #include "TableCell.h"
 
-//#include <array>
 #include <vector>
-//#include <list>
-
-//namespace Base { template < typename T > class TableCell; }
+#include <stdexcept>
 
 
 
 namespace Base
 {
-    template < typename T > using Row = std::vector< TableCell< T > >;
+    template < typename T > using CellRow = std::vector< TableCell< T > >;
 
     template < typename T >
     class Table
@@ -20,85 +17,131 @@ namespace Base
         using Cell = TableCell< T >;
     public:
         Table( int width, int height );
-        Table( std::vector< Row< T > > const & data );
+        Table( std::vector< std::vector< T > > const & data );
 
-        Row< T > const & operator[]( int i ) const;
-        Row< T > & operator[]( int i );
+        T const & GetItem( int i, int j ) const;
+        void SetItem( int i, int j, T const & value );
+
+//        CellRow< T > const & operator[]( int i ) const;
+//        CellRow< T > & operator[]( int i );
 
         int GetWidth() const { return m_width; }
         int GetHeight() const { return m_height; }
     private:
-        std::vector< Row< T > > m_cells3;
+        std::vector< CellRow< T > > m_cells;
         int m_width;
         int m_height;
 
-        bool Check( std::vector< Row< T > > const & data );
+        bool Check( std::vector< std::vector< T > > const & data );
     };
 
 
 
     template< typename T >
     Table< T >::Table( int width, int height )
-        : m_cells3( std::vector< Row< T > >( height ) ),
+        : m_cells( std::vector< CellRow< T > >( height ) ),
           m_width( width ),
           m_height( height )
     {
         for ( int i = 0; i < height; ++i )
         {
-            Row< T > cellTempRow( width );
+            CellRow< T > cellTempRow( width );
             for ( int j = 0; j < width; ++j )
             {
-                cellTempRow[ j ] = TableCell< T >( nullptr, this, i, j );
+                cellTempRow[ j ] = TableCell< T >( T(), this, i, j );
             }
-            m_cells3[ i ] = cellTempRow;
+            m_cells[ i ] = cellTempRow;
         }
     }
 
     template< typename T >
-    Table< T >::Table( std::vector< Row< T > > const & data )
+    Table< T >::Table( std::vector< std::vector< T > > const & data )
     {
         if ( !Check( data ) )
         {
-            throw std::exception();
+            throw std::invalid_argument( "Data can not be represented as a table." );
         }
 
         m_width = data.front().size();
         m_height = data.size();
 
-        m_cells3 = std::vector< Row< T > >( m_height );
+        m_cells = std::vector< CellRow< T > >( m_height );
         for ( int i = 0; i < m_height; ++i )
         {
-            Row< T > cellTempRow( m_width );
+            CellRow< T > cellTempRow( m_width );
             for ( int j = 0; j < m_width; ++j )
             {
-                cellTempRow[ j ] = TableCell< T >( &data[ i ][ j ], this, i, j );
+                cellTempRow[ j ] = TableCell< T >( data[ i ][ j ], this, i, j );
             }
-            m_cells3[ i ] = cellTempRow;
+            m_cells[ i ] = cellTempRow;
         }
     }
 
     template< typename T >
-    Row< T > const & Table< T >::operator[]( int i ) const
+    T const & Table< T >::GetItem( int i, int j ) const
     {
-        return m_cells3[ i ];
+        if ( i <= 0 || i > m_height || j <= 0 || j > m_width )
+        {
+            throw std::out_of_range( "" );
+        }
+
+        return ( m_cells[ i - 1 ][ j - 1 ].GetData() );
     }
 
     template< typename T >
-    Row< T > & Table< T >::operator[]( int i )
+    void Table< T >::SetItem( int i, int j, T const & value )
     {
-        return m_cells3[ i ];
+        if ( i <= 0 || i > m_height || j <= 0 || j > m_width )
+        {
+            throw std::out_of_range( "" );
+        }
+
+        m_cells[ i - 1 ][ j - 1 ] = value;
     }
 
+//    template< typename T >
+//    CellRow< T > const & Table< T >::operator[]( int i ) const
+//    {
+//        if ( i <= 0 || i > m_height )
+//        {
+//            throw std::out_of_range( "" );
+//        }
+
+//        return m_cells[ i - 1 ];
+//    }
+
+//    template< typename T >
+//    CellRow< T > & Table< T >::operator[]( int i )
+//    {
+//        if ( i <= 0 || i > m_height )
+//        {
+//            throw std::out_of_range( "" );
+//        }
+
+//        return m_cells[ i - 1 ];
+//    }
+
     template< typename T >
-    bool Table< T >::Check( std::vector< Row< T > > const & data )
+    bool Table< T >::Check( std::vector< std::vector< T > > const & data )
     {
+        int const h = data.size();
+
+        if ( h == 0 )
+        {
+            return false;
+        }
+
+        int const w = data[ 0 ].size();
+        for ( int i = 1; i < h; ++i )
+        {
+            if ( data[ i ].size() != w )
+            {
+                return false;
+            }
+        }
+
         return true;
     }
 
 
-
-    void TestTables()
-    {
-        Table< int > t1( 3, 5 );
-    }
 }
