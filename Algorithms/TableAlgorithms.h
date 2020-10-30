@@ -119,7 +119,9 @@ namespace Algorithms
         bool SearchCrossCenterForAllCells(
                 Base::Table< Data > &, TCPos start );
         bool SetCrossCenterForCell(
-                Base::Table< Data > &, TCPos pos, Direction, std::list< CrossCenterData > const & ccDatas );
+                Base::Table< Data > &, TCPos pos, Direction,
+                std::list< CrossCenterData > const & ccDatas,
+                std::list< Data > const & notccDatas );
 
         template < typename T >
         TCPosList GetAllNextPositions(
@@ -131,6 +133,10 @@ namespace Algorithms
 
 
 
+        std::list< Data > GetAllCellDataExceptCrossCenters(
+                Base::Table< Data > const & table );
+        void SetCellDataRespectivelyExceptCrossCenter(
+                Base::Table< Data > & table, std::vector< Data > const & datas );
         std::list< CrossCenterData > GetAllCrossCenterDatas(
                 Base::Table< Data > const & table );
         void SetCrossCenterDatasRespectively(
@@ -147,6 +153,8 @@ namespace Algorithms
                 Base::Table< Data > const & table );
         bool CellsAreUnfilled(
                 Base::Table< Data > const & table, const TCPosList & cells );
+        bool CellsBelongToSameBranchOfCrossCenter(
+                Base::Table< Data > const & table, const TCPosList & cells, Data const * crossCenter );
         bool CellsBelongToSameBranch(
                 Base::Table< Data > const & table, const TCPosList & cells );
     }

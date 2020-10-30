@@ -42,14 +42,16 @@ bool Algorithms::TableAlgorithms::SearchCrossCenterForAllCells( Base::Table< Dat
         case CellType::None :
         {
             std::list< CrossCenterData > const ccDatas = GetAllCrossCenterDatas( table );
+            std::list< Data > const notccDatas = GetAllCellDataExceptCrossCenters( table );
 
-            if ( !SetCrossCenterForCell( table, pos, Direction::Upper, ccDatas ) &&
-                 !SetCrossCenterForCell( table, pos, Direction::Bottom, ccDatas ) &&
-                 !SetCrossCenterForCell( table, pos, Direction::Right, ccDatas ) &&
-                 !SetCrossCenterForCell( table, pos, Direction::Left, ccDatas ) )
+            if ( !SetCrossCenterForCell( table, pos, Direction::Upper, ccDatas, notccDatas ) &&
+                 !SetCrossCenterForCell( table, pos, Direction::Bottom, ccDatas, notccDatas ) &&
+                 !SetCrossCenterForCell( table, pos, Direction::Right, ccDatas, notccDatas ) &&
+                 !SetCrossCenterForCell( table, pos, Direction::Left, ccDatas, notccDatas ) )
             {
-                ClearNextPositionsExceptCrossCenters( table, pos );
+                //ClearNextPositionsExceptCrossCenters( table, pos );
                 SetCrossCenterDatasRespectively( table, std::vector< CrossCenterData >( ccDatas.begin(), ccDatas.end() ) );
+                SetCellDataRespectivelyExceptCrossCenter( table, std::vector< Data >( notccDatas.begin(), notccDatas.end() ) );
 
                 return false;
             }
@@ -283,6 +285,24 @@ bool Algorithms::TableAlgorithms::CellsAreUnfilled( const Base::Table< Data > & 
     return true;
 }
 
+bool Algorithms::TableAlgorithms::CellsBelongToSameBranchOfCrossCenter(
+        const Base::Table< Data > & table,
+        const TCPosList & cells,
+        const Data * crossCenter )
+{
+    for ( TCPos pos : cells )
+    {
+        Data data = table.GetItem( pos.row, pos.column );
+
+        if ( data.crossCenter != crossCenter )
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 bool Algorithms::TableAlgorithms::CellsBelongToSameBranch( const Base::Table< Data > & table, const TCPosList & cells )
 {
     if ( cells.empty() )
@@ -309,9 +329,11 @@ bool Algorithms::TableAlgorithms::SetCrossCenterForCell(
         Base::Table< Data > & table,
         TCPos pos,
         Direction crossCenterDirection,
-        std::list< CrossCenterData > const & ccDatas )
+        std::list< CrossCenterData > const & ccDatas,
+        std::list< Data > const & notccDatas )
 {
     SetCrossCenterDatasRespectively( table, std::vector< CrossCenterData >( ccDatas.begin(), ccDatas.end() ) );
+    SetCellDataRespectivelyExceptCrossCenter( table, std::vector< Data >( notccDatas.begin(), notccDatas.end() ) );
 
     TCPos nuccPos = GetNearestCrossCenter( table, pos, crossCenterDirection );
 
@@ -356,7 +378,7 @@ bool Algorithms::TableAlgorithms::SetCrossCenterForCell(
                     return false;
                 }
             }
-            else if ( CellsBelongToSameBranch( table, betweenPositions ) )
+            else if ( CellsBelongToSameBranchOfCrossCenter( table, betweenPositions, nuccDataPointer ) )
             {
                 if ( ccData->capacity >= ccData->count + 1 )
                 {
@@ -418,7 +440,7 @@ bool Algorithms::TableAlgorithms::SetCrossCenterForCell(
                     return false;
                 }
             }
-            else if ( CellsBelongToSameBranch( table, betweenPositions ) )
+            else if ( CellsBelongToSameBranchOfCrossCenter( table, betweenPositions, nuccDataPointer ) )
             {
                 if ( ccData->capacity >= ccData->count + 1 )
                 {
@@ -480,7 +502,7 @@ bool Algorithms::TableAlgorithms::SetCrossCenterForCell(
                     return false;
                 }
             }
-            else if ( CellsBelongToSameBranch( table, betweenPositions ) )
+            else if ( CellsBelongToSameBranchOfCrossCenter( table, betweenPositions, nuccDataPointer ) )
             {
                 if ( ccData->capacity >= ccData->count + 1 )
                 {
@@ -542,7 +564,7 @@ bool Algorithms::TableAlgorithms::SetCrossCenterForCell(
                     return false;
                 }
             }
-            else if ( CellsBelongToSameBranch( table, betweenPositions ) )
+            else if ( CellsBelongToSameBranchOfCrossCenter( table, betweenPositions, nuccDataPointer ) )
             {
                 if ( ccData->capacity >= ccData->count + 1 )
                 {
@@ -589,6 +611,43 @@ void Algorithms::TableAlgorithms::ClearNextPositionsExceptCrossCenters( Base::Ta
     }
 }
 
+std::list< Algorithms::TableAlgorithms::Data > Algorithms::TableAlgorithms::GetAllCellDataExceptCrossCenters(
+        const Base::Table<Algorithms::TableAlgorithms::Data> & table )
+{
+    std::list< Data > result;
+    for ( int i = 1; i <= table.GetHeight(); ++i )
+    {
+        for ( int j = 1; j <= table.GetWidth(); ++j )
+        {
+            Data data = table.GetItem( i, j );
+            if ( data.cellType != CellType::CrossCenter )
+            {
+                result.push_back( data );
+            }
+        }
+    }
+
+    return result;
+}
+
+void Algorithms::TableAlgorithms::SetCellDataRespectivelyExceptCrossCenter( Base::Table< Data > & table, const std::vector< Data > & datas )
+{
+    int index = 0;
+    for ( int i = 1; i <= table.GetHeight(); ++i )
+    {
+        for ( int j = 1; j <= table.GetWidth(); ++j )
+        {
+            Data data = table.GetItem( i, j );
+            if ( data.cellType != CellType::CrossCenter )
+            {
+                table.SetItem( i, j, datas[ index ] );
+
+                ++index;
+            }
+        }
+    }
+}
+
 std::list< Algorithms::TableAlgorithms::CrossCenterData > Algorithms::TableAlgorithms::GetAllCrossCenterDatas( const Base::Table< Data > & table )
 {
     std::list< CrossCenterData > result;
@@ -628,3 +687,6 @@ void Algorithms::TableAlgorithms::SetCrossCenterDatasRespectively( Base::Table< 
         }
     }
 }
+
+
+
