@@ -10,9 +10,9 @@
 
 void PrintInfo()
 {
-    std::list< InputHandler::Data::CityData > const * data = InputHandler::Utilities::ReadData( "input.txt" );
+    std::list< InputHandler::Data::CityData > const data = InputHandler::Utilities::ReadData( "input.txt" );
 
-    for ( InputHandler::Data::CityData const & tc : *data )
+    for ( InputHandler::Data::CityData const & tc : data )
     {
         std::cout << "- TEST CASE info\n\n" ;
         std::cout << "City Width : " << tc.GetWidth() << std::endl;

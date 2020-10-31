@@ -12,7 +12,7 @@ namespace InputHandler
 {
     namespace Utilities
     {
-        std::list< Data::CityData > const * ReadData( std::string const & inputFilePath );
+        std::list< Data::CityData > ReadData( std::string const & inputFilePath );
 
     }
 }

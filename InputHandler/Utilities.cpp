@@ -6,7 +6,7 @@
 
 
 
-std::list<InputHandler::Data::CityData> const * InputHandler::Utilities::ReadData( const std::string & inputFilePath )
+std::list<InputHandler::Data::CityData> InputHandler::Utilities::ReadData( const std::string & inputFilePath )
 {
     //using triple = std::array< int, 3 >;
 
@@ -18,7 +18,7 @@ std::list<InputHandler::Data::CityData> const * InputHandler::Utilities::ReadDat
         throw std::runtime_error( "File has not opened." );
     }
 
-    std::list< Data::CityData > * result = new std::list< Data::CityData >();
+    std::list< Data::CityData > result;
 
     int width = 0;
     int height = 0;
@@ -42,7 +42,7 @@ std::list<InputHandler::Data::CityData> const * InputHandler::Utilities::ReadDat
         {
             if ( testCaseLineNumber == 0 )
             {
-                result->push_back( Data::CityData( width, height, pizzerias ) );
+                result.push_back( Data::CityData( width, height, pizzerias ) );
 
                 pizzerias.clear();
 
