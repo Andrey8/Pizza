@@ -6,7 +6,7 @@
 
 
 
-std::list<InputHandler::Data::CityData> InputHandler::Utilities::ReadData( const std::string & inputFilePath )
+std::list< InputHandler::Data::CityData > InputHandler::Utilities::ReadData( const std::string & inputFilePath )
 {
     //using triple = std::array< int, 3 >;
 

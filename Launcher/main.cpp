@@ -1,6 +1,7 @@
 #include "../InputHandler/Utilities.h"
 #include "../InputHandler/Data/PizzeriaData.h"
 #include "../InputHandler/Data/CityData.h"
+#include "../OutputCreator/Utils.h"
 
 #include <iostream>
 #include <list>
@@ -30,11 +31,16 @@ void PrintInfo()
     }
 }
 
+
+
 int main()
 {
     try
     {
-        PrintInfo();
+        //PrintInfo();
+
+        std::list< InputHandler::Data::CityData > const data = InputHandler::Utilities::ReadData( "input.txt" );
+        OutputCreator::Utilities::HandleAndWriteData( data, "result.txt" );
     }
     catch ( std::exception const & exc )
     {

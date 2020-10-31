@@ -93,7 +93,7 @@ namespace Base
     {
         if ( i <= 0 || i > m_height || j <= 0 || j > m_width )
         {
-            throw std::out_of_range( "" );
+            throw std::out_of_range( "ERROR : indices are out of range." );
         }
 
         m_cells[ i - 1 ][ j - 1 ] = value;

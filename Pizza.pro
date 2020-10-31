@@ -8,4 +8,5 @@ SUBDIRS += \
     Launcher \
     InputHandler \
     Algorithms \
-    Tests
+    Tests \
+    OutputCreator

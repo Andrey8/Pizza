@@ -57,6 +57,12 @@ namespace Algorithms
                   count( 0 )
             {}
 
+            CrossCenterData()
+                : pos( TCPos::GetNeutralValue() ),
+                  capacity( 0 ),
+                  count( 0 )
+            {}
+
             TCPos pos;
             int capacity;
 
