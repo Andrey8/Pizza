@@ -23,6 +23,7 @@ namespace Tests
             void TestSplitIntoCrossesAlgorithm_2();
             void TestSplitIntoCrossesAlgorithm_3();
             void TestSplitIntoCrossesAlgorithm_4();
+            void TestSplitIntoCrossesAlgorithm_5();
         };
 
 
@@ -125,6 +126,44 @@ namespace Tests
             QVERIFY( data[ 9 ].count == 1 );
             QVERIFY( data[ 10 ].count == 3 );
             QVERIFY( data[ 11 ].count == 3 );
+        }
+
+        void TableAlgorithmsTester::TestSplitIntoCrossesAlgorithm_5()
+        {
+            std::vector< CCData > data = {
+                CCData( { 3, 1 }, 2 ),
+                CCData( { 1, 2 }, 4 ),
+                CCData( { 5, 2 }, 4 ),
+                CCData( { 3, 3 }, 5 ),
+                CCData( { 2, 5 }, 2 ),
+                CCData( { 4, 5 }, 2 )
+            };
+
+            Algorithms::TableAlgorithms::SplitTableIntoCrosses(
+                        5, 5, data );
+
+            QVERIFY( data[ 0 ].count == 2 );
+            QVERIFY( data[ 0 ].upperCells.size() == 1 );
+            QVERIFY( data[ 0 ].bottomCells.size() == 1 );
+            QVERIFY( data[ 1 ].count == 4 );
+            QVERIFY( data[ 1 ].upperCells.size() == 1 );
+            QVERIFY( data[ 1 ].rightCells.size() == 2 );
+            QVERIFY( data[ 1 ].leftCells.size() == 1 );
+            QVERIFY( data[ 2 ].count == 4 );
+            QVERIFY( data[ 2 ].bottomCells.size() == 1 );
+            QVERIFY( data[ 2 ].rightCells.size() == 2 );
+            QVERIFY( data[ 2 ].leftCells.size() == 1 );
+            QVERIFY( data[ 3 ].count == 5 );
+            QVERIFY( data[ 3 ].bottomCells.size() == 1 );
+            QVERIFY( data[ 3 ].rightCells.size() == 2 );
+            QVERIFY( data[ 3 ].leftCells.size() == 1 );
+            QVERIFY( data[ 3 ].upperCells.size() == 1 );
+            QVERIFY( data[ 4 ].count == 2 );
+            QVERIFY( data[ 4 ].leftCells.size() == 1 );
+            QVERIFY( data[ 4 ].bottomCells.size() == 1 );
+            QVERIFY( data[ 5 ].count == 2 );
+            QVERIFY( data[ 5 ].leftCells.size() == 1 );
+            QVERIFY( data[ 5 ].upperCells.size() == 1 );
         }
 
 
