@@ -22,6 +22,7 @@ namespace Tests
             void TestSplitIntoCrossesAlgorithm_1();
             void TestSplitIntoCrossesAlgorithm_2();
             void TestSplitIntoCrossesAlgorithm_3();
+            void TestSplitIntoCrossesAlgorithm_4();
         };
 
 
@@ -90,6 +91,40 @@ namespace Tests
             QVERIFY( data[ 5 ].bottomCells.size() == 1 );
             QVERIFY( data[ 6 ].count == 1 );
             QVERIFY( data[ 6 ].leftCells.size() == 1 );
+        }
+
+        void TableAlgorithmsTester::TestSplitIntoCrossesAlgorithm_4()
+        {
+            CCData ccd0( { 1, 2 }, 5 );
+            CCData ccd1( { 1, 6 }, 3 );
+            CCData ccd2( { 2, 3 }, 5 );
+            CCData ccd3( { 2, 9 }, 1 );
+            CCData ccd4( { 3, 8 }, 8 );
+            CCData ccd5( { 4, 1 }, 4 );
+            CCData ccd6( { 4, 5 }, 2 );
+            CCData ccd7( { 5, 3 }, 5 );
+            CCData ccd8( { 5, 7 }, 2 );
+            CCData ccd9( { 6, 1 }, 1 );
+            CCData ccd10( { 6, 7 }, 3 );
+            CCData ccd11( { 6, 9 }, 3 );
+
+            std::vector< CCData > data = {
+                ccd0, ccd1, ccd2, ccd3, ccd4, ccd5, ccd6, ccd7, ccd8, ccd9, ccd10, ccd11 };
+            Algorithms::TableAlgorithms::SplitTableIntoCrosses(
+                        9, 6, data );
+
+            QVERIFY( data[ 0 ].count == 5 );
+            QVERIFY( data[ 1 ].count == 3 );
+            QVERIFY( data[ 2 ].count == 5 );
+            QVERIFY( data[ 3 ].count == 1 );
+            QVERIFY( data[ 4 ].count == 8 );
+            QVERIFY( data[ 5 ].count == 4 );
+            QVERIFY( data[ 6 ].count == 2 );
+            QVERIFY( data[ 7 ].count == 5 );
+            QVERIFY( data[ 8 ].count == 2 );
+            QVERIFY( data[ 9 ].count == 1 );
+            QVERIFY( data[ 10 ].count == 3 );
+            QVERIFY( data[ 11 ].count == 3 );
         }
 
 

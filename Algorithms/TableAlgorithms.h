@@ -1,7 +1,6 @@
 #pragma once
 
 #include "../Base/Table.h"
-//#include "../InputHandler/Data/PizzeriaData.h"
 
 #include <vector>
 #include <list>
@@ -44,10 +43,6 @@ namespace Algorithms
 
             static TableCellPosition GetNeutralValue()
             {
-//                TableCellPosition result;
-//                result.row = 0;
-//                result.column = 0;
-
                 return { 0, 0 };
             }
         };
@@ -64,7 +59,7 @@ namespace Algorithms
 
             TCPos pos;
             int capacity;
-            //TCPosList cells;
+
             int count;
             TCPosList upperCells;
             TCPosList bottomCells;
@@ -114,12 +109,12 @@ namespace Algorithms
 
 
 
-        void SplitTableIntoCrosses(
+        bool SplitTableIntoCrosses(
                 int tableWidth, int tableHeight, std::vector< CrossCenterData > & outData );
         bool SearchCrossCenterForAllCells(
                 Base::Table< Data > &, TCPos start );
         bool SetCrossCenterForCell(
-                Base::Table< Data > &, TCPos pos, Direction,
+                Base::Table< Data > &, TCPos cellPos, Direction,
                 std::list< CrossCenterData > const & ccDatas,
                 std::list< Data > const & notccDatas );
 
@@ -130,8 +125,6 @@ namespace Algorithms
         template < typename T >
         TCPos GetNextPosition(
                 Base::Table< T > const & table, TCPos pos );
-
-
 
         std::list< Data > GetAllCellDataExceptCrossCenters(
                 Base::Table< Data > const & table );
@@ -164,18 +157,18 @@ namespace Algorithms
 
 template < typename T >
 Algorithms::TableAlgorithms::TCPosList Algorithms::TableAlgorithms::GetAllNextPositions(
-        Base::Table< T > const & table, TCPos start )
+        Base::Table< T > const & table, TCPos pos )
 {
     int const w = table.GetWidth();
     int const h = table.GetHeight();
 
     TCPosList result;
-    for ( int j = start.column; j <= w; ++j )
+    for ( int j = pos.column; j <= w; ++j )
     {
-        result.push_back( { start.row, j } );
+        result.push_back( { pos.row, j } );
     }
 
-    for ( int i = start.row + 1; i <= h; ++i )
+    for ( int i = pos.row + 1; i <= h; ++i )
     {
         for ( int j = 1; j <= w; ++j )
         {

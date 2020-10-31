@@ -4,7 +4,7 @@
 
 
 
-void Algorithms::TableAlgorithms::SplitTableIntoCrosses( int tableWidth, int tableHeight, std::vector< CrossCenterData > & outData )
+bool Algorithms::TableAlgorithms::SplitTableIntoCrosses( int tableWidth, int tableHeight, std::vector< CrossCenterData > & outData )
 {
     int const w = tableWidth;
     int const h = tableHeight;
@@ -22,7 +22,11 @@ void Algorithms::TableAlgorithms::SplitTableIntoCrosses( int tableWidth, int tab
     if ( SearchCrossCenterForAllCells( tableCopy, { 1, 1 } ) )
     {
         table = tableCopy;
+
+        return true;
     }
+
+    return false;
 }
 
 bool Algorithms::TableAlgorithms::SearchCrossCenterForAllCells( Base::Table< Data > & table, TCPos start )
@@ -49,7 +53,6 @@ bool Algorithms::TableAlgorithms::SearchCrossCenterForAllCells( Base::Table< Dat
                  !SetCrossCenterForCell( table, pos, Direction::Right, ccDatas, notccDatas ) &&
                  !SetCrossCenterForCell( table, pos, Direction::Left, ccDatas, notccDatas ) )
             {
-                //ClearNextPositionsExceptCrossCenters( table, pos );
                 SetCrossCenterDatasRespectively( table, std::vector< CrossCenterData >( ccDatas.begin(), ccDatas.end() ) );
                 SetCellDataRespectivelyExceptCrossCenter( table, std::vector< Data >( notccDatas.begin(), notccDatas.end() ) );
 
@@ -59,45 +62,6 @@ bool Algorithms::TableAlgorithms::SearchCrossCenterForAllCells( Base::Table< Dat
             {
                 return true;
             }
-
-//            std::vector< TCPos > nearestCrossCenters = {
-//                GetNearestCrossCenter( table, pos, Direction::Upper ),
-//                GetNearestCrossCenter( table, pos, Direction::Bottom ),
-//                GetNearestCrossCenter( table, pos, Direction::Right ),
-//                GetNearestCrossCenter( table, pos, Direction::Left )
-//            };
-
-//            nearestCrossCenters.erase(
-//                        std::remove(
-//                            nearestCrossCenters.begin(),
-//                            nearestCrossCenters.end(), TCPos::GetNeutralValue() ),
-//                        nearestCrossCenters.end() );
-
-//            if ( nearestCrossCenters.empty() )
-//            {
-//                return false;
-//            }
-
-//            for ( TCPos nccPos : nearestCrossCenters )
-//            {
-//                Data const * nccTCDataPointer = &table.GetItem( nccPos.row, nccPos.column );
-//                Data newData( CellType::CrossBranch, nccTCDataPointer, nullptr );
-
-//                table.SetItem( pos.row, pos.column, newData );
-
-//                TCPosList const betweenPositions = GetPositionsBetween( pos, nccPos );
-//                if ( !CellsAreUnfilled( table, betweenPositions ) )
-//                {
-//                    continue;
-//                }
-
-//                for ( TCPos betweenPos : betweenPositions )
-//                {
-//                    table.SetItem( betweenPos.row, betweenPos.column, newData );
-//                }
-//            }
-
-
 
             break;
         }
@@ -141,7 +105,6 @@ Algorithms::TableAlgorithms::TCPos Algorithms::TableAlgorithms::GetNearestCrossC
             Data tcdata = table.GetItem( i, pos.column );
             if ( tcdata.cellType == CellType::CrossCenter )
             {
-                //return &table.GetItem( i, pos.column );
                 return { i, pos.column };
             }
         }
@@ -155,7 +118,6 @@ Algorithms::TableAlgorithms::TCPos Algorithms::TableAlgorithms::GetNearestCrossC
             Data tcdata = table.GetItem( i, pos.column );
             if ( tcdata.cellType == CellType::CrossCenter )
             {
-                //return &table.GetItem( i, pos.column );
                 return { i, pos.column };
             }
         }
@@ -169,7 +131,6 @@ Algorithms::TableAlgorithms::TCPos Algorithms::TableAlgorithms::GetNearestCrossC
             Data tcdata = table.GetItem( pos.row, j );
             if ( tcdata.cellType == CellType::CrossCenter )
             {
-                //return &table.GetItem( pos.row, j );
                 return { pos.row, j };
             }
         }
@@ -183,7 +144,6 @@ Algorithms::TableAlgorithms::TCPos Algorithms::TableAlgorithms::GetNearestCrossC
             Data tcdata = table.GetItem( pos.row, j );
             if ( tcdata.cellType == CellType::CrossCenter )
             {
-                //return &table.GetItem( pos.row, j );
                 return { pos.row, j };
             }
         }
@@ -335,131 +295,58 @@ bool Algorithms::TableAlgorithms::SetCrossCenterForCell(
     SetCrossCenterDatasRespectively( table, std::vector< CrossCenterData >( ccDatas.begin(), ccDatas.end() ) );
     SetCellDataRespectivelyExceptCrossCenter( table, std::vector< Data >( notccDatas.begin(), notccDatas.end() ) );
 
-    TCPos nuccPos = GetNearestCrossCenter( table, pos, crossCenterDirection );
+    TCPos nearestCCPos = GetNearestCrossCenter( table, pos, crossCenterDirection );
 
-//    Data const * nuccDataPointer = &table.GetItem( nuccPos.row, nuccPos.column );
-//    CrossCenterData * ccData = nuccDataPointer->crossCenterData;
+    if ( nearestCCPos == TCPos::GetNeutralValue() )
+    {
+        return false;
+    }
 
-//    Data newData( CellType::CrossBranch, nuccDataPointer, nullptr );
+    Data const * nearestCCDataPointer = &table.GetItem( nearestCCPos.row, nearestCCPos.column );
+    CrossCenterData * ccData = nearestCCDataPointer->crossCenterData;
+
+    Data newData( CellType::CrossBranch, nearestCCDataPointer, nullptr );
 
     switch ( crossCenterDirection )
     {
     case Direction::Upper :
     {
-        if ( nuccPos != TCPos::GetNeutralValue() )
+        TCPosList const betweenPositions = GetPositionsBetween( pos, nearestCCPos );
+        if ( CellsAreUnfilled( table, betweenPositions ) )
         {
-            Data const * nuccDataPointer = &table.GetItem( nuccPos.row, nuccPos.column );
-            CrossCenterData * ccData = nuccDataPointer->crossCenterData;
-
-            Data newData( CellType::CrossBranch, nuccDataPointer, nullptr );
-
-            TCPosList const betweenPositions = GetPositionsBetween( pos, nuccPos );
-            if ( CellsAreUnfilled( table, betweenPositions ) )
-            {
-                if ( ccData->capacity >= ccData->count + betweenPositions.size() + 1 )
-                {
-                    ccData->bottomCells.push_back( pos );
-                    ++( ccData->count );
-
-                    for ( TCPos betweenPos : betweenPositions )
-                    {
-                        ccData->bottomCells.push_back( betweenPos );
-
-                        table.SetItem( betweenPos.row, betweenPos.column, newData );
-                    }
-                    ccData->count += betweenPositions.size();
-
-                    table.SetItem( pos.row, pos.column, newData );
-
-                    return SearchCrossCenterForAllCells( table, GetNextPosition( table, pos ) );
-                }
-                else
-                {
-                    return false;
-                }
-            }
-            else if ( CellsBelongToSameBranchOfCrossCenter( table, betweenPositions, nuccDataPointer ) )
-            {
-                if ( ccData->capacity >= ccData->count + 1 )
-                {
-                    ccData->bottomCells.push_back( pos );
-                    ++( ccData->count );
-
-                    table.SetItem( pos.row, pos.column, newData );
-
-                    return SearchCrossCenterForAllCells( table, GetNextPosition( table, pos ) );
-                }
-                else
-                {
-                    return false;
-                }
-            }
-            else
+            if ( ccData->capacity < ccData->count + betweenPositions.size() + 1 )
             {
                 return false;
             }
-        }
-        else
-        {
-            return false;
-        }
 
-        break;
-    }
-    case Direction::Right :
-    {
-        if ( nuccPos != TCPos::GetNeutralValue() )
-        {
-            Data const * nuccDataPointer = &table.GetItem( nuccPos.row, nuccPos.column );
-            CrossCenterData * ccData = nuccDataPointer->crossCenterData;
+            ccData->bottomCells.push_back( pos );
+            ++( ccData->count );
 
-            Data newData( CellType::CrossBranch, nuccDataPointer, nullptr );
-
-            TCPosList const betweenPositions = GetPositionsBetween( pos, nuccPos );
-            if ( CellsAreUnfilled( table, betweenPositions ) )
+            for ( TCPos betweenPos : betweenPositions )
             {
-                if ( ccData->capacity >= ccData->count + betweenPositions.size() + 1 )
-                {
-                    ccData->leftCells.push_back( pos );
-                    ++( ccData->count );
+                ccData->bottomCells.push_back( betweenPos );
 
-                    for ( TCPos betweenPos : betweenPositions )
-                    {
-                        ccData->leftCells.push_back( betweenPos );
-
-                        table.SetItem( betweenPos.row, betweenPos.column, newData );
-                    }
-                    ccData->count += betweenPositions.size();
-
-                    table.SetItem( pos.row, pos.column, newData );
-
-                    return SearchCrossCenterForAllCells( table, GetNextPosition( table, pos ) );
-                }
-                else
-                {
-                    return false;
-                }
+                table.SetItem( betweenPos.row, betweenPos.column, newData );
             }
-            else if ( CellsBelongToSameBranchOfCrossCenter( table, betweenPositions, nuccDataPointer ) )
-            {
-                if ( ccData->capacity >= ccData->count + 1 )
-                {
-                    ccData->leftCells.push_back( pos );
-                    ++( ccData->count );
+            ccData->count += betweenPositions.size();
 
-                    table.SetItem( pos.row, pos.column, newData );
+            table.SetItem( pos.row, pos.column, newData );
 
-                    return SearchCrossCenterForAllCells( table, GetNextPosition( table, pos ) );
-                }
-                else
-                {
-                    return false;
-                }
-            }
-            else
+            return SearchCrossCenterForAllCells( table, GetNextPosition( table, pos ) );
+        }
+        else if ( CellsBelongToSameBranchOfCrossCenter( table, betweenPositions, nearestCCDataPointer ) )
+        {
+            if ( ccData->capacity < ccData->count + 1 )
             {
                 return false;
             }
+
+            ccData->bottomCells.push_back( pos );
+            ++( ccData->count );
+
+            table.SetItem( pos.row, pos.column, newData );
+
+            return SearchCrossCenterForAllCells( table, GetNextPosition( table, pos ) );
         }
         else
         {
@@ -470,58 +357,88 @@ bool Algorithms::TableAlgorithms::SetCrossCenterForCell(
     }
     case Direction::Bottom :
     {
-        if ( nuccPos != TCPos::GetNeutralValue() )
+        TCPosList const betweenPositions = GetPositionsBetween( pos, nearestCCPos );
+        if ( CellsAreUnfilled( table, betweenPositions ) )
         {
-            Data const * nuccDataPointer = &table.GetItem( nuccPos.row, nuccPos.column );
-            CrossCenterData * ccData = nuccDataPointer->crossCenterData;
-
-            Data newData( CellType::CrossBranch, nuccDataPointer, nullptr );
-
-            TCPosList const betweenPositions = GetPositionsBetween( pos, nuccPos );
-            if ( CellsAreUnfilled( table, betweenPositions ) )
-            {
-                if ( ccData->capacity >= ccData->count + betweenPositions.size() + 1 )
-                {
-                    ccData->upperCells.push_back( pos );
-                    ++( ccData->count );
-
-                    for ( TCPos betweenPos : betweenPositions )
-                    {
-                        ccData->upperCells.push_back( betweenPos );
-
-                        table.SetItem( betweenPos.row, betweenPos.column, newData );
-                    }
-                    ccData->count += betweenPositions.size();
-
-                    table.SetItem( pos.row, pos.column, newData );
-
-                    return SearchCrossCenterForAllCells( table, GetNextPosition( table, pos ) );
-                }
-                else
-                {
-                    return false;
-                }
-            }
-            else if ( CellsBelongToSameBranchOfCrossCenter( table, betweenPositions, nuccDataPointer ) )
-            {
-                if ( ccData->capacity >= ccData->count + 1 )
-                {
-                    ccData->upperCells.push_back( pos );
-                    ++( ccData->count );
-
-                    table.SetItem( pos.row, pos.column, newData );
-
-                    return SearchCrossCenterForAllCells( table, GetNextPosition( table, pos ) );
-                }
-                else
-                {
-                    return false;
-                }
-            }
-            else
+            if ( ccData->capacity < ccData->count + betweenPositions.size() + 1 )
             {
                 return false;
             }
+
+            ccData->upperCells.push_back( pos );
+            ++( ccData->count );
+
+            for ( TCPos betweenPos : betweenPositions )
+            {
+                ccData->upperCells.push_back( betweenPos );
+
+                table.SetItem( betweenPos.row, betweenPos.column, newData );
+            }
+            ccData->count += betweenPositions.size();
+
+            table.SetItem( pos.row, pos.column, newData );
+
+            return SearchCrossCenterForAllCells( table, GetNextPosition( table, pos ) );
+        }
+        else if ( CellsBelongToSameBranchOfCrossCenter( table, betweenPositions, nearestCCDataPointer ) )
+        {
+            if ( ccData->capacity < ccData->count + 1 )
+            {
+                return false;
+            }
+
+            ccData->upperCells.push_back( pos );
+            ++( ccData->count );
+
+            table.SetItem( pos.row, pos.column, newData );
+
+            return SearchCrossCenterForAllCells( table, GetNextPosition( table, pos ) );
+        }
+        else
+        {
+            return false;
+        }
+
+        break;
+    }
+    case Direction::Right :
+    {
+        TCPosList const betweenPositions = GetPositionsBetween( pos, nearestCCPos );
+        if ( CellsAreUnfilled( table, betweenPositions ) )
+        {
+            if ( ccData->capacity < ccData->count + betweenPositions.size() + 1 )
+            {
+                return false;
+            }
+
+            ccData->leftCells.push_back( pos );
+            ++( ccData->count );
+
+            for ( TCPos betweenPos : betweenPositions )
+            {
+                ccData->leftCells.push_back( betweenPos );
+
+                table.SetItem( betweenPos.row, betweenPos.column, newData );
+            }
+            ccData->count += betweenPositions.size();
+
+            table.SetItem( pos.row, pos.column, newData );
+
+            return SearchCrossCenterForAllCells( table, GetNextPosition( table, pos ) );
+        }
+        else if ( CellsBelongToSameBranchOfCrossCenter( table, betweenPositions, nearestCCDataPointer ) )
+        {
+            if ( ccData->capacity < ccData->count + 1 )
+            {
+                return false;
+            }
+
+            ccData->leftCells.push_back( pos );
+            ++( ccData->count );
+
+            table.SetItem( pos.row, pos.column, newData );
+
+            return SearchCrossCenterForAllCells( table, GetNextPosition( table, pos ) );
         }
         else
         {
@@ -532,58 +449,42 @@ bool Algorithms::TableAlgorithms::SetCrossCenterForCell(
     }
     case Direction::Left :
     {
-        if ( nuccPos != TCPos::GetNeutralValue() )
+        TCPosList const betweenPositions = GetPositionsBetween( pos, nearestCCPos );
+        if ( CellsAreUnfilled( table, betweenPositions ) )
         {
-            Data const * nuccDataPointer = &table.GetItem( nuccPos.row, nuccPos.column );
-            CrossCenterData * ccData = nuccDataPointer->crossCenterData;
-
-            Data newData( CellType::CrossBranch, nuccDataPointer, nullptr );
-
-            TCPosList const betweenPositions = GetPositionsBetween( pos, nuccPos );
-            if ( CellsAreUnfilled( table, betweenPositions ) )
-            {
-                if ( ccData->capacity >= ccData->count + betweenPositions.size() + 1 )
-                {
-                    ccData->rightCells.push_back( pos );
-                    ++( ccData->count );
-
-                    for ( TCPos betweenPos : betweenPositions )
-                    {
-                        ccData->rightCells.push_back( betweenPos );
-
-                        table.SetItem( betweenPos.row, betweenPos.column, newData );
-                    }
-                    ccData->count += betweenPositions.size();
-
-                    table.SetItem( pos.row, pos.column, newData );
-
-                    return SearchCrossCenterForAllCells( table, GetNextPosition( table, pos ) );
-                }
-                else
-                {
-                    return false;
-                }
-            }
-            else if ( CellsBelongToSameBranchOfCrossCenter( table, betweenPositions, nuccDataPointer ) )
-            {
-                if ( ccData->capacity >= ccData->count + 1 )
-                {
-                    ccData->rightCells.push_back( pos );
-                    ++( ccData->count );
-
-                    table.SetItem( pos.row, pos.column, newData );
-
-                    return SearchCrossCenterForAllCells( table, GetNextPosition( table, pos ) );
-                }
-                else
-                {
-                    return false;
-                }
-            }
-            else
+            if ( ccData->capacity < ccData->count + betweenPositions.size() + 1 )
             {
                 return false;
             }
+
+            ccData->rightCells.push_back( pos );
+            ++( ccData->count );
+
+            for ( TCPos betweenPos : betweenPositions )
+            {
+                ccData->rightCells.push_back( betweenPos );
+
+                table.SetItem( betweenPos.row, betweenPos.column, newData );
+            }
+            ccData->count += betweenPositions.size();
+
+            table.SetItem( pos.row, pos.column, newData );
+
+            return SearchCrossCenterForAllCells( table, GetNextPosition( table, pos ) );
+        }
+        else if ( CellsBelongToSameBranchOfCrossCenter( table, betweenPositions, nearestCCDataPointer ) )
+        {
+            if ( ccData->capacity < ccData->count + 1 )
+            {
+                return false;
+            }
+
+            ccData->rightCells.push_back( pos );
+            ++( ccData->count );
+
+            table.SetItem( pos.row, pos.column, newData );
+
+            return SearchCrossCenterForAllCells( table, GetNextPosition( table, pos ) );
         }
         else
         {
@@ -594,7 +495,7 @@ bool Algorithms::TableAlgorithms::SetCrossCenterForCell(
     }
     }
 
-
+    throw std::logic_error( "" );
 }
 
 void Algorithms::TableAlgorithms::ClearNextPositionsExceptCrossCenters( Base::Table< Data > & table, TCPos position )
